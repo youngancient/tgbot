@@ -20,7 +20,6 @@ function pickWinner(chatId, userId, type) {
   const users = Array.from(pickedUsers.keys());
   if (users.length > 0 && winnersCount < 5) {
     if (getRandomNumber(1, 1000) === fixedGuess) {
-      console.log("You were selected");
       const winnerUsername = pickedUsers.get(userId);
       winnersCount++;
       // Announce the winner in the main group
@@ -44,12 +43,35 @@ function pickWinner(chatId, userId, type) {
   }
 }
 
+
+// Function to create a customized keyboard
+function createCustomKeyboard() {
+    // Define the keyboard layout
+    const keyboard = [
+        ['Pick Me🎅🏻', 'WhitePaper'],
+        ['Website', 'Santa Memes😏'],
+      ];
+  
+    return {
+      keyboard,
+      resize_keyboard: true,
+      one_time_keyboard: false,
+    };
+  }
+
 // Listen for "/start" command in DM or group
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-  const introductionMessage =
-    "Hi, I am DevGojo. send /pickme to get selected 🎅🏻";
-  bot.sendMessage(chatId, introductionMessage);
+//   const introductionMessage =
+//     "Hi, I am DevGojo. send /pickme to get selected 🎅🏻";
+//   bot.sendMessage(chatId, introductionMessage);
+
+  // Create the customized keyboard
+  const replyMarkup = createCustomKeyboard();
+
+  // Send a welcome message with the customized keyboard
+  bot.sendMessage(chatId, 'Hi, I am DevGojo🎅🏻 Select what you want:', { reply_markup: replyMarkup })
+    .catch((error) => console.error('Error sending message with keyboard:', error));
 });
 
 // Listen for "/pickme" command in DM or group
@@ -61,7 +83,7 @@ bot.onText(/\/pickme/, (msg) => {
   if (pickedUsers.has(userId)) {
     bot.sendMessage(
       chatId,
-      "Sorry you can only play with Santa🎅🏻 once in 24 hours."
+      `Sorry ${username}, You can only play with Santa🎅🏻 once in 24 hours.`
     );
   } else {
     // Store the user and respond
@@ -72,11 +94,41 @@ bot.onText(/\/pickme/, (msg) => {
       pickWinner(chatId, userId, (type = "chat"));
     } else {
       // If it's a DM, respond directly to the user
-      //   bot.sendMessage(userId, `Hey ${username}, Santa 🎅🏻 picked you! Congrats! 🎉 DM @jude for rewards.`);
       pickWinner(chatId, userId, (type = "dm"));
     }
   }
 });
+
+
+bot.onText(/\/startkeyboard/, (msg) => {
+    const chatId = msg.chat.id;
+    const replyMarkup = createCustomKeyboard();
+  
+    // Send a message with the customized keyboard
+    bot.sendMessage(chatId, 'Hi, I am DevGojo🎅🏻 Select what you want:', { reply_markup: replyMarkup })
+    .catch((error) => console.error('Error sending message with keyboard:', error));
+});
+
+// Handle button clicks
+bot.on('message', (msg) => {
+    const chatId = msg.chat.id;
+    const text = msg.text;
+    // Handle button clicks based on the received text
+    switch (text) {
+      case 'Pick Me🎅🏻':
+        bot.sendMessage(chatId, '/pickme');
+        break;
+      case 'WhitePaper':
+        bot.sendMessage(chatId, '/whitepaper');
+        break;
+      case 'Website':
+        bot.sendMessage(chatId, '/website');
+        break;
+      case 'Santa Memes😏':
+        bot.sendMessage(chatId, '/meme');
+        break;
+    }
+})
 
 // Schedule the reset of picked users and winners count every 24 hours
 setInterval(() => {
@@ -88,5 +140,6 @@ setInterval(() => {
 bot.on("polling_error", (error) => {
   console.error(error);
 });
+
 
 console.log("Bot is running...");
